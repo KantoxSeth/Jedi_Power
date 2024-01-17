@@ -1,0 +1,62 @@
+In AWS Lambda, you can use the AWS SDK (boto3 for Python, AWS SDK for Node.js, etc.) to interact with AWS Key Management Service (KMS) and perform encryption and decryption. Below is an example using Python and boto3 in a Lambda function:
+
+    Create a Lambda Function:
+
+    Create a new Lambda function using the AWS Management Console or using an infrastructure-as-code tool like AWS CloudFormation or Terraform. Ensure that the Lambda function has the necessary IAM role with permissions to use KMS.
+
+    Add Code to Lambda Function:
+
+    Below is an example Python code that you can use in a Lambda function to encrypt and decrypt data using KMS. This example assumes that you have a KMS key created and its ID stored in the environment variable KMS_KEY_ID.
+
+    ###############Python###############
+
+    import boto3
+    import json
+    import os
+
+    kms_key_id = os.environ.get('KMS_KEY_ID') # This key you can get from the previous file where I generated the AWS CMK and Hardcode it.
+
+    def encrypt_data(plaintext):
+        kms_client = boto3.client('kms')
+        response = kms_client.encrypt(KeyId=kms_key_id,Plaintext=plaintext.encode('utf-8'))
+        return response['CiphertextBlob']
+
+    def decrypt_data(ciphertext):
+        kms_client = boto3.client('kms')
+        response = kms_client.decrypt(CiphertextBlob=ciphertext)
+        return response['Plaintext'].decode('utf-8')
+
+    def lambda_handler(event, context):
+        # Original JSON , taking the first few extracts of the data.
+        original_data = {
+            "98721": {"name": "Yoda", "planet": "Dagobah", "power_level": 90},
+            "54832": {"name": "Obi-Wan Kenobi", "planet": "Stewjon", "power_level": 85},
+            "12345": {"name": "Mace Windu", "planet": "Haruun Kal", "power_level": 87},
+            "78965": {"name": "Rey", "planet": "Jakku", "power_level": 75}
+        }
+
+        # Encrypt the "planet" values
+        for key, value in original_data.items():
+            value['planet'] = encrypt_data(value['planet'])
+
+        # Print or use the encrypted data
+        print(json.dumps(original_data, indent=2))
+
+        # If you need to decrypt later
+        decrypted_planet = decrypt_data(original_data['98721']['planet'])
+        print(f'Decrypted Planet: {decrypted_planet}')
+
+        return {
+            'statusCode': 200,
+            'body': json.dumps('Data encrypted and/or decrypted successfully!')
+        }
+
+    In the above code, the encrypt_data function encrypts the "planet" values in the JSON using KMS, and the decrypt_data function can be used to decrypt the values later if needed.
+
+    Configure Lambda Environment Variable: This is optional or you can hardcode.
+
+    Set the KMS_KEY_ID environment variable in the Lambda function configuration with the ID of your KMS key.
+
+  
+
+
