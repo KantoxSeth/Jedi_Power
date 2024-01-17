@@ -1,0 +1,12 @@
+
+# Assuming your AWS-CLI is installed and you already have used aws configure command with Access Key and Secret Access Keys.
+
+aws kms create-key --region your-region --description "Your Key Description" --policy "some policy"
+
+aws-encryption-cli --encrypt --input jedi.json \
+                     --master-keys key=$keyID \
+                     --encryption-context purpose=test \
+                     --metadata-output ~/metadata \
+                     --output .
+
+# Since I was not able to use this command practically I am also giving an example below with openssl which is free and a bash utility and I can use that as well to encrypt any file.
